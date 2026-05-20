@@ -1,0 +1,17 @@
+com/loja/web/service/LojaClientService.class
+com/loja/web/WebMsApplication.class
+com/loja/web/dto/EstoqueForm.class
+com/loja/web/dto/ClienteForm.class
+com/loja/web/controller/WebController.class
+com/loja/web/dto/EstoqueResponse.class
+com/loja/web/dto/ApiErrorResponse.class
+com/loja/web/service/LojaClientService$RestCall.class
+com/loja/web/dto/PedidoItemForm.class
+com/loja/web/dto/PedidoItemResponse.class
+com/loja/web/config/RestClientConfig.class
+com/loja/web/dto/PedidoItemRequest.class
+com/loja/web/dto/ClienteResponse.class
+com/loja/web/service/LojaClientService$WebClientException.class
+com/loja/web/dto/PedidoForm.class
+com/loja/web/dto/PedidoRequest.class
+com/loja/web/dto/PedidoResponse.class

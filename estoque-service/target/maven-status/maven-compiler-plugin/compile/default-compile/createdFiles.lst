@@ -1,0 +1,13 @@
+com/loja/estoque/exception/BusinessException.class
+com/loja/estoque/dto/DebitoEstoqueRequest.class
+com/loja/estoque/EstoqueServiceApplication.class
+com/loja/estoque/service/EstoqueService.class
+com/loja/estoque/exception/ResourceNotFoundException.class
+com/loja/estoque/entity/Estoque.class
+com/loja/estoque/repository/EstoqueRepository.class
+com/loja/estoque/exception/ApiError.class
+com/loja/estoque/exception/GlobalExceptionHandler.class
+com/loja/estoque/dto/DebitoEstoqueItemRequest.class
+com/loja/estoque/controller/EstoqueController.class
+com/loja/estoque/dto/EstoqueResponse.class
+com/loja/estoque/dto/EstoqueRequest.class

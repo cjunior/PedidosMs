@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  clientes-db:
+    image: postgres:16-alpine
+    container_name: clientes-db
+    environment:
+      POSTGRES_DB: clientesdb
+      POSTGRES_USER: clientes
+      POSTGRES_PASSWORD: clientes
+    volumes:
+      - clientes-db-data:/var/lib/postgresql/data
+
+  estoque-db:
+    image: postgres:16-alpine
+    container_name: estoque-db
+    environment:
+      POSTGRES_DB: estoquedb
+      POSTGRES_USER: estoque
+      POSTGRES_PASSWORD: estoque
+    volumes:
+      - estoque-db-data:/var/lib/postgresql/data
+
+  pedidos-db:
+    image: postgres:16-alpine
+    container_name: pedidos-db
+    environment:
+      POSTGRES_DB: pedidosdb
+      POSTGRES_USER: pedidos
+      POSTGRES_PASSWORD: pedidos
+    volumes:
+      - pedidos-db-data:/var/lib/postgresql/data
+
+  clientes-service:
+    build:
+      context: ./clientes-service
+    container_name: clientes-service
+    depends_on:
+      - clientes-db
+    environment:
+      DB_HOST: clientes-db
+      DB_PORT: 5432
+      DB_NAME: clientesdb
+      DB_USER: clientes
+      DB_PASSWORD: clientes
+      SERVER_PORT: 8081
+    ports:
+      - "9005:8081"
+
+  estoque-service:
+    build:
+      context: ./estoque-service
+    container_name: estoque-service
+    depends_on:
+      - estoque-db
+    environment:
+      DB_HOST: estoque-db
+      DB_PORT: 5432
+      DB_NAME: estoquedb
+      DB_USER: estoque
+      DB_PASSWORD: estoque
+      SERVER_PORT: 8082
+    ports:
+      - "9006:8082"
+
+  pedidos-service:
+    build:
+      context: ./pedidos-service
+    container_name: pedidos-service
+    depends_on:
+      - pedidos-db
+      - clientes-service
+      - estoque-service
+    environment:
+      DB_HOST: pedidos-db
+      DB_PORT: 5432
+      DB_NAME: pedidosdb
+      DB_USER: pedidos
+      DB_PASSWORD: pedidos
+      SERVER_PORT: 8083
+      CLIENTES_SERVICE_URL: http://clientes-service:8081
+      ESTOQUE_SERVICE_URL: http://estoque-service:8082
+    ports:
+      - "9007:8083"
+
+  web-ms:
+    build:
+      context: ./web-ms
+    container_name: web-ms
+    depends_on:
+      - clientes-service
+      - estoque-service
+      - pedidos-service
+    environment:
+      SERVER_PORT: 8080
+      CLIENTES_SERVICE_URL: http://clientes-service:8081
+      ESTOQUE_SERVICE_URL: http://estoque-service:8082
+      PEDIDOS_SERVICE_URL: http://pedidos-service:8083
+    ports:
+      - "9008:8080"
+
+volumes:
+  clientes-db-data:
+  estoque-db-data:
+  pedidos-db-data:

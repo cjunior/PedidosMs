@@ -1,0 +1,15 @@
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/WebMsApplication.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/config/RestClientConfig.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/controller/WebController.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/ApiErrorResponse.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/ClienteForm.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/ClienteResponse.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/EstoqueForm.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/EstoqueResponse.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoForm.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoItemForm.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoItemRequest.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoItemResponse.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoRequest.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/dto/PedidoResponse.java
+/home/cjunior/git/loja-microservices/web-ms/src/main/java/com/loja/web/service/LojaClientService.java

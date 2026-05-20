@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Microservices</title>
+    <link rel="stylesheet" th:href="@{/app.css}">
+</head>
+<body>
+<main class="page-shell">
+    <section class="hero">
+        <div>
+            <p class="eyebrow">web-ms</p>
+            <h1>Operacao unificada da loja</h1>
+            <p class="hero-copy">
+                Cadastre clientes, alimente o estoque e feche pedidos em uma interface unica consumindo os microsservicos existentes.
+            </p>
+        </div>
+        <div class="hero-metrics">
+            <article>
+                <strong th:text="${#lists.size(clientes)}">0</strong>
+                <span>Clientes</span>
+            </article>
+            <article>
+                <strong th:text="${#lists.size(produtos)}">0</strong>
+                <span>Produtos</span>
+            </article>
+            <article>
+                <strong th:text="${#lists.size(pedidos)}">0</strong>
+                <span>Pedidos</span>
+            </article>
+        </div>
+    </section>
+
+    <div class="flash-stack">
+        <div class="flash flash-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="flash flash-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    </div>
+
+    <section class="grid">
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Novo cliente</h2>
+                <p>Escreve em <code>clientes-service</code></p>
+            </div>
+            <form th:action="@{/clientes}" th:object="${clienteForm}" method="post" class="form-grid">
+                <label>
+                    <span>Nome completo</span>
+                    <input type="text" th:field="*{nomeCompleto}" placeholder="Maria da Silva">
+                    <small th:if="${#fields.hasErrors('nomeCompleto')}" th:errors="*{nomeCompleto}" class="field-error"></small>
+                </label>
+                <label>
+                    <span>CPF</span>
+                    <input type="text" th:field="*{cpf}" placeholder="00000000000">
+                    <small th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="field-error"></small>
+                </label>
+                <label>
+                    <span>Endereco</span>
+                    <input type="text" th:field="*{endereco}" placeholder="Rua Central, 100">
+                    <small th:if="${#fields.hasErrors('endereco')}" th:errors="*{endereco}" class="field-error"></small>
+                </label>
+                <label>
+                    <span>Telefone</span>
+                    <input type="text" th:field="*{telefone}" placeholder="85999990000">
+                    <small th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}" class="field-error"></small>
+                </label>
+                <button type="submit">Cadastrar cliente</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Novo produto</h2>
+                <p>Escreve em <code>estoque-service</code></p>
+            </div>
+            <form th:action="@{/estoques}" th:object="${estoqueForm}" method="post" class="form-grid">
+                <label>
+                    <span>Nome do produto</span>
+                    <input type="text" th:field="*{nomeProduto}" placeholder="Notebook 14">
+                    <small th:if="${#fields.hasErrors('nomeProduto')}" th:errors="*{nomeProduto}" class="field-error"></small>
+                </label>
+                <label>
+                    <span>Valor unitario</span>
+                    <input type="number" step="0.01" th:field="*{valorUnitario}" placeholder="3499.90">
+                    <small th:if="${#fields.hasErrors('valorUnitario')}" th:errors="*{valorUnitario}" class="field-error"></small>
+                </label>
+                <label>
+                    <span>Quantidade em estoque</span>
+                    <input type="number" th:field="*{quantidadeEstoque}" placeholder="10">
+                    <small th:if="${#fields.hasErrors('quantidadeEstoque')}" th:errors="*{quantidadeEstoque}" class="field-error"></small>
+                </label>
+                <button type="submit">Cadastrar produto</button>
+            </form>
+        </article>
+    </section>
+
+    <section class="panel order-panel">
+        <div class="panel-head">
+            <div>
+                <h2>Novo pedido</h2>
+                <p>Consulta clientes e estoque, depois grava em <code>pedidos-service</code></p>
+            </div>
+            <button type="button" class="secondary-button" id="add-item-button">Adicionar item</button>
+        </div>
+        <form th:action="@{/pedidos}" th:object="${pedidoForm}" method="post" class="order-form">
+            <label>
+                <span>Cliente</span>
+                <select th:field="*{clienteId}">
+                    <option value="">Selecione um cliente</option>
+                    <option th:each="cliente : ${clientes}" th:value="${cliente.id()}"
+                            th:text="${cliente.nomeCompleto() + ' • CPF ' + cliente.cpf()}"></option>
+                </select>
+                <small th:if="${#fields.hasErrors('clienteId')}" th:errors="*{clienteId}" class="field-error"></small>
+            </label>
+
+            <div class="items-stack">
+                <div class="field-error" th:if="${#fields.hasErrors('itens')}" th:errors="*{itens}"></div>
+                <div class="item-row" th:each="item, stat : *{itens}">
+                    <label>
+                        <span>Produto</span>
+                        <select th:field="*{itens[__${stat.index}__].produtoId}">
+                            <option value="">Selecione um produto</option>
+                            <option th:each="produto : ${produtos}" th:value="${produto.id()}"
+                                    th:text="${produto.nomeProduto() + ' • estoque ' + produto.quantidadeEstoque()}"></option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('itens[' + stat.index + '].produtoId')}"
+                               th:errors="*{itens[__${stat.index}__].produtoId}" class="field-error"></small>
+                    </label>
+                    <label>
+                        <span>Quantidade</span>
+                        <input type="number" min="1" th:field="*{itens[__${stat.index}__].quantidade}" placeholder="1">
+                        <small th:if="${#fields.hasErrors('itens[' + stat.index + '].quantidade')}"
+                               th:errors="*{itens[__${stat.index}__].quantidade}" class="field-error"></small>
+                    </label>
+                    <button type="button" class="ghost-button remove-item-button">Remover</button>
+                </div>
+            </div>
+
+            <button type="submit">Criar pedido</button>
+        </form>
+    </section>
+
+    <section class="catalog-grid">
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Clientes</h2>
+                <p th:text="${#lists.size(clientes) + ' registros'}">0 registros</p>
+            </div>
+            <div class="table-list">
+                <div class="table-card" th:each="cliente : ${clientes}">
+                    <strong th:text="${cliente.nomeCompleto()}">Cliente</strong>
+                    <span th:text="${cliente.cpf()}">CPF</span>
+                    <span th:text="${cliente.telefone()}">Telefone</span>
+                    <small th:text="${cliente.endereco()}">Endereco</small>
+                </div>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <h2>Estoque</h2>
+                <p th:text="${#lists.size(produtos) + ' produtos'}">0 produtos</p>
+            </div>
+            <div class="table-list">
+                <div class="table-card" th:each="produto : ${produtos}">
+                    <strong th:text="${produto.nomeProduto()}">Produto</strong>
+                    <span th:text="${'R$ ' + #numbers.formatDecimal(produto.valorUnitario(), 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                    <small th:text="${'Saldo: ' + produto.quantidadeEstoque()}">Saldo: 0</small>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Pedidos</h2>
+            <p>Acompanhe pedidos abertos e concluidos</p>
+        </div>
+        <div class="orders-stack">
+            <article class="order-card" th:each="pedido : ${pedidos}">
+                <header>
+                    <div>
+                        <strong th:text="${pedido.numero()}">PEDIDO</strong>
+                        <span th:text="${pedido.status()}">ABERTO</span>
+                    </div>
+                    <form th:if="${pedido.status() == 'ABERTO'}" th:action="@{/pedidos/{id}/concluir(id=${pedido.id()})}" method="post">
+                        <button type="submit">Concluir</button>
+                    </form>
+                </header>
+                <p th:text="${'Cliente ID: ' + pedido.clienteId()}"></p>
+                <p th:text="${'Criado em: ' + #temporals.format(pedido.criadoEm(), 'dd/MM/yyyy HH:mm')}"></p>
+                <ul>
+                    <li th:each="item : ${pedido.itens}"
+                        th:text="${item.nomeProduto() + ' • qtd ' + item.quantidade() + ' • R$ ' + #numbers.formatDecimal(item.valorUnitario(), 1, 'POINT', 2, 'COMMA')}">
+                        Item
+                    </li>
+                </ul>
+            </article>
+        </div>
+    </section>
+</main>
+
+<template id="item-row-template">
+    <div class="item-row">
+        <label>
+            <span>Produto</span>
+            <select data-field="produtoId">
+                <option value="">Selecione um produto</option>
+                <option th:each="produto : ${produtos}" th:value="${produto.id()}"
+                        th:text="${produto.nomeProduto() + ' • estoque ' + produto.quantidadeEstoque()}"></option>
+            </select>
+        </label>
+        <label>
+            <span>Quantidade</span>
+            <input type="number" min="1" data-field="quantidade" placeholder="1">
+        </label>
+        <button type="button" class="ghost-button remove-item-button">Remover</button>
+    </div>
+</template>
+
+<script th:inline="javascript">
+    const container = document.querySelector('.items-stack');
+    const addButton = document.getElementById('add-item-button');
+    const template = document.getElementById('item-row-template');
+
+    function syncItemIndexes() {
+        const rows = container.querySelectorAll('.item-row');
+        rows.forEach((row, index) => {
+            const productSelect = row.querySelector('[data-field="produtoId"], select');
+            const quantityInput = row.querySelector('[data-field="quantidade"], input');
+            productSelect.name = `itens[${index}].produtoId`;
+            quantityInput.name = `itens[${index}].quantidade`;
+        });
+    }
+
+    addButton.addEventListener('click', () => {
+        const fragment = template.content.cloneNode(true);
+        container.appendChild(fragment);
+        syncItemIndexes();
+    });
+
+    container.addEventListener('click', event => {
+        if (!event.target.classList.contains('remove-item-button')) {
+            return;
+        }
+
+        const rows = container.querySelectorAll('.item-row');
+        if (rows.length === 1) {
+            rows[0].querySelector('select').value = '';
+            rows[0].querySelector('input').value = '';
+            return;
+        }
+
+        event.target.closest('.item-row').remove();
+        syncItemIndexes();
+    });
+
+    syncItemIndexes();
+</script>
+</body>
+</html>
