@@ -44,8 +44,6 @@ services:
       DB_USER: clientes
       DB_PASSWORD: clientes
       SERVER_PORT: 8081
-    ports:
-      - "9005:8081"
 
   estoque-service:
     build:
@@ -60,8 +58,6 @@ services:
       DB_USER: estoque
       DB_PASSWORD: estoque
       SERVER_PORT: 8082
-    ports:
-      - "9006:8082"
 
   pedidos-service:
     build:
@@ -80,8 +76,18 @@ services:
       SERVER_PORT: 8083
       CLIENTES_SERVICE_URL: http://clientes-service:8081
       ESTOQUE_SERVICE_URL: http://estoque-service:8082
+
+  api-gateway:
+    image: nginx:1.27-alpine
+    container_name: api-gateway
+    depends_on:
+      - clientes-service
+      - estoque-service
+      - pedidos-service
+    volumes:
+      - ./nginx/api-gateway.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "9007:8083"
+      - "9000:9000"
 
   web-ms:
     build:
@@ -93,9 +99,9 @@ services:
       - pedidos-service
     environment:
       SERVER_PORT: 8080
-      CLIENTES_SERVICE_URL: http://clientes-service:8081
-      ESTOQUE_SERVICE_URL: http://estoque-service:8082
-      PEDIDOS_SERVICE_URL: http://pedidos-service:8083
+      CLIENTES_SERVICE_URL: http://api-gateway:9000
+      ESTOQUE_SERVICE_URL: http://api-gateway:9000
+      PEDIDOS_SERVICE_URL: http://api-gateway:9000
     ports:
       - "9008:8080"
 

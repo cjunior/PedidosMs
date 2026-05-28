@@ -1,0 +1,666 @@
+
+\documentclass[12pt,a4paper]{article}
+
+% ----- Pacotes -----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{tcolorbox}
+\usepackage{array}
+\tcbuselibrary{listingsutf8, skins, breakable}
+
+\geometry{top=2.5cm, headheight=15pt, bottom=2.5cm, left=3cm, right=2.5cm}
+
+% ----- Cores -----
+\definecolor{codeblue}{RGB}{0,100,180}
+\definecolor{codegray}{RGB}{245,245,245}
+\definecolor{codegreen}{RGB}{0,128,0}
+\definecolor{codered}{RGB}{180,0,0}
+\definecolor{alertyellow}{RGB}{255,248,220}
+\definecolor{alertborder}{RGB}{200,160,0}
+\definecolor{tipgreen}{RGB}{230,255,230}
+\definecolor{tipborder}{RGB}{0,150,0}
+\definecolor{headerblue}{RGB}{30,80,150}
+\definecolor{dockerblue}{RGB}{0,100,150}
+
+% ----- Estilo terminal -----
+\lstdefinestyle{terminal}{
+  backgroundcolor=\color{black!90},
+  basicstyle=\ttfamily\small\color{white},
+  breaklines=true,
+  frame=single,
+  numbers=none,
+  xleftmargin=0pt,
+  framexleftmargin=0pt
+}
+
+% ----- Estilo Python -----
+\lstdefinestyle{python}{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{codeblue}\bfseries,
+  commentstyle=\color{codegreen}\itshape,
+  stringstyle=\color{codered},
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.5em,
+  language=Python,
+  showstringspaces=false,
+  literate={a}{{a}}1
+}
+
+% ----- Estilo código genérico -----
+\lstdefinestyle{code}{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.5em,
+  showstringspaces=false
+}
+
+% ----- Caixas de destaque -----
+\newtcolorbox{alertbox}{
+  colback=alertyellow,
+  colframe=alertborder,
+  fonttitle=\bfseries,
+  title={Aten\c{c}\~ao},
+  breakable
+}
+
+
+\newtcolorbox{infobox}[1][Informa\c{c}\~ao]{
+  colback=blue!5,
+  colframe=headerblue,
+  fonttitle=\bfseries,
+  title={#1},
+  breakable
+}
+
+\newtcolorbox{questbox}{
+  colback=blue!3,
+  colframe=dockerblue,
+  fonttitle=\bfseries,
+  title={Quest\~oes para Reflex\~ao},
+  breakable
+}
+
+% ----- Comando para campo em branco -----
+\newcommand{\campo}[1]{\underline{\hspace{#1}}}
+
+% ----- Cabeçalho e rodapé -----
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{headerblue}{\textbf{IFCE -- Ci\^encia da Computa\c{c}\~ao}}}
+\fancyhead[R]{\small\textcolor{headerblue}{API Gateway com Nginx e Docker Compose}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ----- Formatação de seções -----
+\titleformat{\section}
+  {\Large\bfseries\color{headerblue}}
+  {\thesection.}{0.5em}{}[\titlerule]
+
+\titleformat{\subsection}
+  {\large\bfseries\color{headerblue!80}}
+  {\thesubsection.}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{headerblue!60}}
+  {\thesubsubsection.}{0.5em}{}
+
+% ================================================================
+\begin{document}
+
+% ----- Capa -----
+\begin{titlepage}
+  \centering
+  \vspace*{1cm}
+  {\Large \textbf{INSTITUTO FEDERAL DE EDUCA\c{C}\~AO, CI\^ENCIA E TECNOLOGIA DO CEAR\'A}}\\[0.3cm]
+  {\large Curso: Ci\^encia da Computa\c{c}\~ao}\\[0.1cm]
+  {\large Disciplina: \campo{7cm}}\\[0.1cm]
+  {\large Professor(a): \campo{6cm}}
+
+  \vspace{2cm}
+
+  \rule{\textwidth}{1.5pt}\\[0.4cm]
+  {\Huge \textbf{Roteiro de Aula Pr\'atica}}\\[0.3cm]
+  {\LARGE API Gateway com Nginx em Microsservi\c{c}os}\\[0.3cm]
+  {\large Docker Compose, Spring Boot e Proxy Reverso}\\[0.4cm]
+  \rule{\textwidth}{1.5pt}
+
+  \vspace{2cm}
+
+  \begin{infobox}[Objetivos do Documento]
+    Ao final desta aula, o aluno ser\'a capaz de:
+    \begin{itemize}[leftmargin=1.5em]
+      \item entender por que expor cada microsservi\c{c}o em uma porta diferente pode ser ruim;
+      \item explicar o papel de um API Gateway em uma arquitetura distribu\'ida;
+      \item configurar o Nginx como proxy reverso para tr\^es APIs REST;
+      \item alterar o \texttt{docker-compose.yml} para publicar apenas o gateway;
+      \item fazer o front consumir as APIs por uma porta \'unica;
+      \item validar a solu\c{c}\~ao com \texttt{docker ps}, \texttt{docker compose config} e \texttt{curl}.
+    \end{itemize}
+  \end{infobox}
+
+  \vspace{1.2cm}
+
+  \begin{infobox}[Produto Final]
+    O produto final deste roteiro \'e uma aplica\c{c}\~ao de loja com:
+    \begin{itemize}[leftmargin=1.5em]
+      \item \texttt{clientes-service}, \texttt{estoque-service} e \texttt{pedidos-service} acess\'iveis por \texttt{http://localhost:9000};
+      \item \texttt{web-ms} mantido em \texttt{http://localhost:9008};
+      \item Nginx roteando \texttt{/api/clientes}, \texttt{/api/estoques} e \texttt{/api/pedidos};
+      \item portas antigas \texttt{9005}, \texttt{9006} e \texttt{9007} fechadas para acesso externo.
+    \end{itemize}
+  \end{infobox}
+
+  \vfill
+  {\large Fortaleza, \the\year}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ================================================================
+\section{Como Ler Este Material}
+
+Este roteiro foi pensado para ser usado como guia de uma aula pr\'atica. Ele mostra o problema inicial, a motiva\c{c}\~ao arquitetural, as altera\c{c}\~oes feitas no projeto e os testes usados para confirmar que tudo funcionou.
+
+\begin{infobox}[Estrat\'egia da Aula]
+  A aula est\'a dividida em seis partes:
+  \begin{enumerate}[leftmargin=2em]
+    \item identificar os microsservi\c{c}os e portas abertas;
+    \item discutir o problema de expor cada API separadamente;
+    \item criar a configura\c{c}\~ao do Nginx;
+    \item alterar o \texttt{docker-compose.yml};
+    \item subir os containers novamente;
+    \item testar o gateway e as portas antigas.
+  \end{enumerate}
+\end{infobox}
+
+\begin{alertbox}
+  O objetivo n\~ao \'e apenas copiar a configura\c{c}\~ao. O ponto principal da aula \'e entender que o gateway se torna a entrada \'unica das APIs, enquanto os microsservi\c{c}os continuam existindo internamente.
+\end{alertbox}
+
+% ================================================================
+\section{Parte 1 --- Diagn\'ostico Inicial}
+
+\subsection{Contexto}
+
+O projeto \texttt{loja-microservices} possui uma pequena aplica\c{c}\~ao de loja dividida em microsservi\c{c}os. Antes da mudan\c{c}a, cada API estava exposta diretamente em uma porta diferente da m\'aquina host.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Servi\c{c}o} & \textbf{Responsabilidade} & \textbf{Porta antes da mudan\c{c}a} \\
+\midrule
+\texttt{clientes-service} & API de clientes & \texttt{9005 -> 8081} \\
+\texttt{estoque-service} & API de estoque & \texttt{9006 -> 8082} \\
+\texttt{pedidos-service} & API de pedidos & \texttt{9007 -> 8083} \\
+\texttt{web-ms} & Interface web & \texttt{9008 -> 8080} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Comandos usados para observar o ambiente}
+
+\begin{lstlisting}[style=terminal]
+ss -ltnp
+\end{lstlisting}
+
+Esse comando mostra portas TCP em estado de escuta. Ele permitiu observar as portas \texttt{9005}, \texttt{9006}, \texttt{9007} e \texttt{9008} abertas.
+
+\begin{lstlisting}[style=terminal]
+docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}'
+\end{lstlisting}
+
+Esse comando mostrou quais containers estavam rodando, suas imagens, portas publicadas e estado atual.
+
+\begin{infobox}[Resultado observado]
+  Os containers principais eram:
+  \begin{itemize}[leftmargin=1.5em]
+    \item \texttt{web-ms}, publicado em \texttt{9008};
+    \item \texttt{clientes-service}, publicado em \texttt{9005};
+    \item \texttt{estoque-service}, publicado em \texttt{9006};
+    \item \texttt{pedidos-service}, publicado em \texttt{9007};
+    \item bancos \texttt{clientes-db}, \texttt{estoque-db} e \texttt{pedidos-db}, acess\'iveis apenas dentro da rede Docker.
+  \end{itemize}
+\end{infobox}
+
+\subsection{Porta interna e porta externa}
+
+No Docker Compose, uma declara\c{c}\~ao como esta:
+
+\begin{lstlisting}[style=code]
+ports:
+  - "9005:8081"
+\end{lstlisting}
+
+significa que a porta \texttt{9005} da m\'aquina host encaminha para a porta \texttt{8081} dentro do container.
+
+
+\begin{questbox}
+  \begin{itemize}[leftmargin=1.5em]
+    \item O consumidor da API deveria conhecer a porta de cada microsservi\c{c}o?
+    \item O que acontece se uma API mudar de porta?
+    \item Expor v\'arias portas aumenta ou diminui a superf\'icie de acesso da aplica\c{c}\~ao?
+  \end{itemize}
+\end{questbox}
+
+% ================================================================
+\section{Parte 2 --- Problema que Queremos Resolver}
+
+\subsection{Situa\c{c}\~ao antes do gateway}
+
+Antes da altera\c{c}\~ao, para consumir todas as APIs era necess\'ario conhecer v\'arias portas:
+
+\begin{lstlisting}[style=terminal]
+http://localhost:9005/api/clientes
+http://localhost:9006/api/estoques
+http://localhost:9007/api/pedidos
+\end{lstlisting}
+
+Isso funciona, mas tem limita\c{c}\~oes importantes:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item cada servi\c{c}o fica diretamente exposto no host;
+  \item o cliente precisa conhecer detalhes internos da arquitetura;
+  \item fica mais dif\'icil centralizar logs, autentica\c{c}\~ao, CORS e limita\c{c}\~ao de requisi\c{c}\~oes;
+  \item a arquitetura fica menos parecida com uma solu\c{c}\~ao real de produ\c{c}\~ao.
+\end{itemize}
+
+\subsection{Solu\c{c}\~ao proposta}
+
+A solu\c{c}\~ao foi criar um \textbf{API Gateway} com Nginx. Depois disso, as APIs passam a ser acessadas por uma \'unica porta:
+
+\begin{lstlisting}[style=terminal]
+http://localhost:9000/api/clientes
+http://localhost:9000/api/estoques
+http://localhost:9000/api/pedidos
+\end{lstlisting}
+
+\begin{infobox}[O que \'e um API Gateway?]
+  Um API Gateway \'e um ponto de entrada para chamadas externas. Ele recebe uma requisi\c{c}\~ao, analisa o caminho da URL e encaminha para o servi\c{c}o interno correto. Neste roteiro, o Nginx faz esse papel como proxy reverso.
+\end{infobox}
+
+% ================================================================
+\section{Parte 3 --- Criando a Configura\c{c}\~ao do Nginx}
+
+\subsection{Criando a pasta}
+
+Foi criada uma pasta chamada \texttt{nginx} na raiz do projeto:
+
+\begin{lstlisting}[style=terminal]
+mkdir -p nginx
+\end{lstlisting}
+
+\subsection{Criando o arquivo do gateway}
+
+Dentro dessa pasta, foi criado o arquivo:
+
+\begin{lstlisting}[style=terminal]
+nginx/api-gateway.conf
+\end{lstlisting}
+
+com o seguinte conte\'udo:
+
+\begin{lstlisting}[style=code]
+server {
+    listen 9000;
+    server_name _;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location /api/clientes {
+        proxy_pass http://clientes-service:8081;
+    }
+
+    location /api/estoques {
+        proxy_pass http://estoque-service:8082;
+    }
+
+    location /api/pedidos {
+        proxy_pass http://pedidos-service:8083;
+    }
+
+    location / {
+        return 404;
+    }
+}
+\end{lstlisting}
+
+\subsection{Explica\c{c}\~ao da configura\c{c}\~ao}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{listen 9000}: faz o Nginx escutar na porta \texttt{9000} dentro do container.
+  \item \texttt{server\_name \_}: aceita requisi\c{c}\~oes independentemente do nome do host.
+  \item \texttt{proxy\_set\_header}: preserva informa\c{c}\~oes da requisi\c{c}\~ao original.
+  \item \texttt{location /api/clientes}: define que chamadas para clientes v\~ao para \texttt{clientes-service:8081}.
+  \item \texttt{location /api/estoques}: define que chamadas para estoque v\~ao para \texttt{estoque-service:8082}.
+  \item \texttt{location /api/pedidos}: define que chamadas para pedidos v\~ao para \texttt{pedidos-service:8083}.
+  \item \texttt{location /}: retorna \texttt{404} para qualquer caminho n\~ao configurado.
+\end{itemize}
+
+
+% ================================================================
+\section{Parte 4 --- Alterando o docker-compose.yml}
+
+\subsection{Removendo as portas p\'ublicas das APIs}
+
+Antes, os servi\c{c}os de API tinham \texttt{ports}. Exemplo:
+
+\begin{lstlisting}[style=code]
+clientes-service:
+  build:
+    context: ./clientes-service
+  container_name: clientes-service
+  depends_on:
+    - clientes-db
+  environment:
+    SERVER_PORT: 8081
+  ports:
+    - "9005:8081"
+\end{lstlisting}
+
+A parte removida foi:
+
+\begin{lstlisting}[style=code]
+ports:
+  - "9005:8081"
+\end{lstlisting}
+
+O mesmo foi feito para:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{estoque-service}, removendo \texttt{9006:8082};
+  \item \texttt{pedidos-service}, removendo \texttt{9007:8083}.
+\end{itemize}
+
+\begin{alertbox}
+  Remover \texttt{ports} n\~ao desliga o servi\c{c}o. Ele continua acess\'ivel por outros containers na mesma rede Docker. A diferen\c{c}a \'e que ele deixa de ficar acess\'ivel diretamente pela m\'aquina host.
+\end{alertbox}
+
+\subsection{Adicionando o servi\c{c}o api-gateway}
+
+Foi adicionado este servi\c{c}o ao \texttt{docker-compose.yml}:
+
+\begin{lstlisting}[style=code]
+api-gateway:
+  image: nginx:1.27-alpine
+  container_name: api-gateway
+  depends_on:
+    - clientes-service
+    - estoque-service
+    - pedidos-service
+  volumes:
+    - ./nginx/api-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+  ports:
+    - "9000:9000"
+\end{lstlisting}
+
+\subsection{Detalhes importantes}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{image: nginx:1.27-alpine}: usa uma imagem oficial e leve do Nginx.
+  \item \texttt{container\_name: api-gateway}: define um nome fixo para facilitar comandos e logs.
+  \item \texttt{depends\_on}: indica que o gateway depende dos servi\c{c}os de API.
+  \item \texttt{volumes}: monta a configura\c{c}\~ao local do Nginx dentro do container.
+  \item \texttt{:ro}: monta o arquivo como somente leitura.
+  \item \texttt{9000:9000}: publica a porta \texttt{9000} no host.
+\end{itemize}
+
+\begin{alertbox}
+  \texttt{depends\_on} ajuda na ordem de subida dos containers, mas n\~ao garante que uma aplica\c{c}\~ao Spring Boot j\'a esteja pronta para responder. Em projetos maiores, vale adicionar \texttt{healthcheck}.
+\end{alertbox}
+
+\subsection{Ajustando o web-ms}
+
+O front \texttt{web-ms} j\'a possu\'ia vari\'aveis para indicar a URL base das APIs. Antes, elas apontavam diretamente para os microsservi\c{c}os:
+
+\begin{lstlisting}[style=code]
+CLIENTES_SERVICE_URL: http://clientes-service:8081
+ESTOQUE_SERVICE_URL: http://estoque-service:8082
+PEDIDOS_SERVICE_URL: http://pedidos-service:8083
+\end{lstlisting}
+
+Depois, passaram a apontar para o gateway:
+
+\begin{lstlisting}[style=code]
+CLIENTES_SERVICE_URL: http://api-gateway:9000
+ESTOQUE_SERVICE_URL: http://api-gateway:9000
+PEDIDOS_SERVICE_URL: http://api-gateway:9000
+\end{lstlisting}
+
+\subsection{Por que o c\'odigo Java n\~ao mudou?}
+
+O \texttt{web-ms} j\'a monta as URLs finais adicionando o caminho da API. Exemplo simplificado:
+
+\begin{lstlisting}[style=code]
+restClient.get()
+    .uri(clientesServiceUrl + "/api/clientes")
+    .retrieve()
+    .body(ClienteResponse[].class);
+\end{lstlisting}
+
+Como \texttt{clientesServiceUrl} passou a ser \texttt{http://api-gateway:9000}, a URL final fica:
+
+\begin{lstlisting}[style=terminal]
+http://api-gateway:9000/api/clientes
+\end{lstlisting}
+
+% ================================================================
+\section{Parte 5 --- Subindo e Validando a Solu\c{c}\~ao}
+
+\subsection{Validando o Compose}
+
+Antes de subir, \'e poss\'ivel pedir ao Docker Compose para interpretar o arquivo completo:
+
+\begin{lstlisting}[style=terminal]
+docker compose config
+\end{lstlisting}
+
+Esse comando ajuda a encontrar erros de sintaxe, indentac\~ao e configura\c{c}\~ao.
+
+
+\subsection{Subindo os containers}
+
+Depois das altera\c{c}\~oes, foi executado:
+
+\begin{lstlisting}[style=terminal]
+docker compose up -d
+\end{lstlisting}
+
+Esse comando:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item baixou a imagem \texttt{nginx:1.27-alpine}, caso ela n\~ao existisse localmente;
+  \item recriou containers cuja configura\c{c}\~ao mudou;
+  \item iniciou o \texttt{api-gateway};
+  \item manteve a aplica\c{c}\~ao rodando em segundo plano.
+\end{itemize}
+
+\subsection{Conferindo portas depois da mudan\c{c}a}
+
+\begin{lstlisting}[style=terminal]
+docker ps --format 'table {{.Names}}\t{{.Ports}}\t{{.Status}}'
+\end{lstlisting}
+
+O resultado esperado \'e semelhante a:
+
+\begin{lstlisting}[style=terminal]
+NAMES              PORTS
+web-ms             0.0.0.0:9008->8080/tcp
+api-gateway        0.0.0.0:9000->9000/tcp
+pedidos-service    8083/tcp
+clientes-service   8081/tcp
+estoque-service    8082/tcp
+clientes-db        5432/tcp
+estoque-db         5432/tcp
+pedidos-db         5432/tcp
+\end{lstlisting}
+
+\begin{infobox}[Como interpretar o resultado]
+  Depois da mudan\c{c}a, apenas \texttt{api-gateway} e \texttt{web-ms} t\^em portas publicadas no host. Os servi\c{c}os \texttt{clientes-service}, \texttt{estoque-service} e \texttt{pedidos-service} continuam ativos, mas acess\'iveis apenas dentro da rede Docker.
+\end{infobox}
+
+% ================================================================
+\section{Parte 6 --- Testes com curl}
+
+\subsection{Testando clientes pelo gateway}
+
+\begin{lstlisting}[style=terminal]
+curl -s -o /tmp/clientes.out -w '%{http_code}' http://localhost:9000/api/clientes
+\end{lstlisting}
+
+Resultado esperado:
+
+\begin{lstlisting}[style=terminal]
+200
+\end{lstlisting}
+
+\subsection{Testando estoque pelo gateway}
+
+\begin{lstlisting}[style=terminal]
+curl -s -o /tmp/estoques.out -w '%{http_code}' http://localhost:9000/api/estoques
+\end{lstlisting}
+
+Resultado esperado:
+
+\begin{lstlisting}[style=terminal]
+200
+\end{lstlisting}
+
+\subsection{Testando pedidos pelo gateway}
+
+\begin{lstlisting}[style=terminal]
+curl -s -o /tmp/pedidos.out -w '%{http_code}' http://localhost:9000/api/pedidos
+\end{lstlisting}
+
+Resultado esperado:
+
+\begin{lstlisting}[style=terminal]
+200
+\end{lstlisting}
+
+\subsection{Testando o front}
+
+\begin{lstlisting}[style=terminal]
+curl -s -o /tmp/web.out -w '%{http_code}' http://localhost:9008
+\end{lstlisting}
+
+Resultado esperado:
+
+\begin{lstlisting}[style=terminal]
+200
+\end{lstlisting}
+
+\subsection{Testando uma porta antiga}
+
+Foi testado o acesso antigo ao servi\c{c}o de clientes:
+
+\begin{lstlisting}[style=terminal]
+curl -s -o /tmp/old-clientes.out -w '%{http_code}' http://localhost:9005/api/clientes
+\end{lstlisting}
+
+Resultado observado:
+
+\begin{lstlisting}[style=terminal]
+000
+\end{lstlisting}
+
+\begin{infobox}[O que significa \texttt{000}?]
+  No \texttt{curl}, o c\'odigo \texttt{000} normalmente indica que a conex\~ao n\~ao foi estabelecida. Neste caso, isso \'e esperado, pois a porta \texttt{9005} n\~ao est\'a mais publicada no host.
+\end{infobox}
+
+% ================================================================
+\section{Arquitetura Final}
+
+Depois da altera\c{c}\~ao, a arquitetura de acesso ficou assim:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Acesso externo} & \textbf{Gateway encaminha para} & \textbf{Responsabilidade} \\
+\midrule
+\texttt{localhost:9000/api/clientes} & \texttt{clientes-service:8081} & Clientes \\
+\texttt{localhost:9000/api/estoques} & \texttt{estoque-service:8082} & Estoque \\
+\texttt{localhost:9000/api/pedidos} & \texttt{pedidos-service:8083} & Pedidos \\
+\texttt{localhost:9008} & \texttt{web-ms:8080} & Interface web \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{alertbox}
+  O \texttt{web-ms} foi mantido fora do gateway porque o objetivo desta etapa era centralizar apenas as APIs. Em outro desenho arquitetural, o Nginx tamb\'em poderia servir o front em \texttt{/} e manter as APIs em \texttt{/api}.
+\end{alertbox}
+
+% ================================================================
+\section{Por que Isso Foi Feito?}
+
+A mudan\c{c}a foi feita para aproximar o projeto de uma arquitetura mais organizada e mais comum em ambientes reais.
+
+\subsection{Benef\'icios principais}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Entrada \'unica}: o consumidor usa \texttt{localhost:9000} para todas as APIs.
+  \item \textbf{Menos exposi\c{c}\~ao}: as portas \texttt{9005}, \texttt{9006} e \texttt{9007} deixam de ser p\'ublicas.
+  \item \textbf{Roteamento centralizado}: as regras de encaminhamento ficam no Nginx.
+  \item \textbf{Evolu\c{c}\~ao futura}: o gateway pode receber autentica\c{c}\~ao, HTTPS, logs, rate limit e CORS.
+  \item \textbf{Cliente mais simples}: quem consome a API n\~ao precisa saber onde cada microsservi\c{c}o roda internamente.
+\end{itemize}
+
+\subsection{O que n\~ao mudou}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item Os servi\c{c}os Spring Boot continuam escutando nas mesmas portas internas.
+  \item Os bancos PostgreSQL continuam internos.
+  \item O \texttt{pedidos-service} continua chamando \texttt{clientes-service} e \texttt{estoque-service} diretamente pela rede Docker.
+  \item O front continua acess\'ivel em \texttt{localhost:9008}.
+\end{itemize}
+
+
+% ================================================================
+\section{Resumo do Que Foi Alterado}
+
+\begin{enumerate}[leftmargin=2em]
+  \item Foi criada a pasta \texttt{nginx}.
+  \item Foi criado o arquivo \texttt{nginx/api-gateway.conf}.
+  \item Foi adicionado o container \texttt{api-gateway} usando \texttt{nginx:1.27-alpine}.
+  \item O gateway foi publicado em \texttt{9000:9000}.
+  \item Foram removidas as portas p\'ublicas dos servi\c{c}os de API.
+  \item O \texttt{web-ms} passou a consumir \texttt{http://api-gateway:9000}.
+  \item O Compose foi validado com \texttt{docker compose config}.
+  \item Os containers foram recriados com \texttt{docker compose up -d}.
+  \item Os endpoints foram testados com \texttt{curl} e retornaram \texttt{200}.
+\end{enumerate}
+
+% ================================================================
+\section{Fechamento}
+
+O ponto central desta pr\'atica \'e perceber que o API Gateway organiza a entrada do sistema sem eliminar os microsservi\c{c}os. Cada servi\c{c}o continua com sua responsabilidade, sua porta interna e seu banco quando necess\'ario. A diferen\c{c}a \'e que o consumidor externo n\~ao precisa mais conhecer todos esses detalhes.
+
+Com o Nginx na porta \texttt{9000}, a aplica\c{c}\~ao passa a ter uma entrada \'unica para as APIs, reduz a exposi\c{c}\~ao direta dos servi\c{c}os e abre caminho para melhorias futuras como autentica\c{c}\~ao centralizada, HTTPS e monitoramento.
+
+\end{document}
