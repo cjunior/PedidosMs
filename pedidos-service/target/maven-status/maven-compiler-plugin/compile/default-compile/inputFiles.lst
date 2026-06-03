@@ -12,11 +12,17 @@
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/entity/Pedido.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/entity/PedidoItem.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/entity/StatusPedido.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/event/EstoqueDebitadoEvent.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/event/EstoqueDebitoFalhouEvent.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/event/PedidoConcluidoEvent.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/event/PedidoConcluidoItemEvent.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/exception/ApiError.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/exception/BusinessException.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/exception/GlobalExceptionHandler.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/exception/IntegrationException.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/exception/ResourceNotFoundException.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/messaging/EstoqueResultadoListener.java
+/home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/messaging/PedidoEventPublisher.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/repository/PedidoRepository.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/service/IntegracaoService.java
 /home/cjunior/git/loja-microservices/pedidos-service/src/main/java/com/loja/pedidos/service/PedidoService.java

@@ -1,6 +1,25 @@
 version: "3.9"
 
 services:
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+
   clientes-db:
     image: postgres:16-alpine
     container_name: clientes-db
@@ -51,6 +70,7 @@ services:
     container_name: estoque-service
     depends_on:
       - estoque-db
+      - kafka
     environment:
       DB_HOST: estoque-db
       DB_PORT: 5432
@@ -58,6 +78,7 @@ services:
       DB_USER: estoque
       DB_PASSWORD: estoque
       SERVER_PORT: 8082
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   pedidos-service:
     build:
@@ -67,6 +88,7 @@ services:
       - pedidos-db
       - clientes-service
       - estoque-service
+      - kafka
     environment:
       DB_HOST: pedidos-db
       DB_PORT: 5432
@@ -76,6 +98,7 @@ services:
       SERVER_PORT: 8083
       CLIENTES_SERVICE_URL: http://clientes-service:8081
       ESTOQUE_SERVICE_URL: http://estoque-service:8082
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
 
   api-gateway:
     image: nginx:1.27-alpine

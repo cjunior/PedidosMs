@@ -183,7 +183,7 @@
                         <strong th:text="${pedido.numero()}">PEDIDO</strong>
                         <span th:text="${pedido.status()}">ABERTO</span>
                     </div>
-                    <form th:if="${pedido.status() == 'ABERTO'}" th:action="@{/pedidos/{id}/concluir(id=${pedido.id()})}" method="post">
+                    <form th:if="${pedido.status() == 'ABERTO' || pedido.status() == 'FALHA_ESTOQUE'}" th:action="@{/pedidos/{id}/concluir(id=${pedido.id()})}" method="post">
                         <button type="submit">Concluir</button>
                     </form>
                 </header>

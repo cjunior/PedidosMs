@@ -123,7 +123,7 @@ public class WebController {
     public String concluirPedido(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             lojaClientService.concluirPedido(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Pedido concluido com sucesso.");
+            redirectAttributes.addFlashAttribute("successMessage", "Pedido enviado para processamento de estoque.");
         } catch (WebClientException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }

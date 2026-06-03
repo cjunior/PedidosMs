@@ -5,9 +5,17 @@
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/dto/EstoqueRequest.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/dto/EstoqueResponse.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/entity/Estoque.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/entity/PedidoEstoqueProcessado.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/event/EstoqueDebitadoEvent.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/event/EstoqueDebitoFalhouEvent.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/event/PedidoConcluidoEvent.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/event/PedidoConcluidoItemEvent.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/exception/ApiError.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/exception/BusinessException.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/exception/GlobalExceptionHandler.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/exception/ResourceNotFoundException.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/messaging/EstoqueEventPublisher.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/messaging/PedidoConcluidoListener.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/repository/EstoqueRepository.java
+/home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/repository/PedidoEstoqueProcessadoRepository.java
 /home/cjunior/git/loja-microservices/estoque-service/src/main/java/com/loja/estoque/service/EstoqueService.java

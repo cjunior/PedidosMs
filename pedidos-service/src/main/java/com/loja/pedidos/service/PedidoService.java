@@ -1,8 +1,6 @@
 package com.loja.pedidos.service;
 
 import com.loja.pedidos.client.EstoqueClientResponse;
-import com.loja.pedidos.dto.DebitoEstoqueItemRequest;
-import com.loja.pedidos.dto.DebitoEstoqueRequest;
 import com.loja.pedidos.dto.PedidoItemRequest;
 import com.loja.pedidos.dto.PedidoItemResponse;
 import com.loja.pedidos.dto.PedidoRequest;
@@ -10,8 +8,11 @@ import com.loja.pedidos.dto.PedidoResponse;
 import com.loja.pedidos.entity.Pedido;
 import com.loja.pedidos.entity.PedidoItem;
 import com.loja.pedidos.entity.StatusPedido;
+import com.loja.pedidos.event.PedidoConcluidoEvent;
+import com.loja.pedidos.event.PedidoConcluidoItemEvent;
 import com.loja.pedidos.exception.BusinessException;
 import com.loja.pedidos.exception.ResourceNotFoundException;
+import com.loja.pedidos.messaging.PedidoEventPublisher;
 import com.loja.pedidos.repository.PedidoRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,10 +25,16 @@ public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
     private final IntegracaoService integracaoService;
+    private final PedidoEventPublisher pedidoEventPublisher;
 
-    public PedidoService(PedidoRepository pedidoRepository, IntegracaoService integracaoService) {
+    public PedidoService(
+            PedidoRepository pedidoRepository,
+            IntegracaoService integracaoService,
+            PedidoEventPublisher pedidoEventPublisher
+    ) {
         this.pedidoRepository = pedidoRepository;
         this.integracaoService = integracaoService;
+        this.pedidoEventPublisher = pedidoEventPublisher;
     }
 
     public List<PedidoResponse> listar() {
@@ -73,18 +80,41 @@ public class PedidoService {
     @Transactional
     public PedidoResponse concluir(Long id) {
         Pedido pedido = obterEntidade(id);
-        validarPedidoAberto(pedido);
+        validarPedidoPodeSerConcluido(pedido);
 
-        DebitoEstoqueRequest debitoRequest = new DebitoEstoqueRequest(
-                pedido.getItens().stream()
-                        .map(item -> new DebitoEstoqueItemRequest(item.getProdutoId(), item.getQuantidade()))
+        pedido.setStatus(StatusPedido.PROCESSANDO_ESTOQUE);
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+
+        PedidoConcluidoEvent event = new PedidoConcluidoEvent(
+                pedidoSalvo.getId(),
+                pedidoSalvo.getNumero(),
+                pedidoSalvo.getClienteId(),
+                LocalDateTime.now(),
+                pedidoSalvo.getItens().stream()
+                        .map(item -> new PedidoConcluidoItemEvent(item.getProdutoId(), item.getQuantidade()))
                         .toList()
         );
+        pedidoEventPublisher.publicarPedidoConcluido(event);
 
-        integracaoService.debitarEstoque(debitoRequest);
-        pedido.setStatus(StatusPedido.CONCLUIDO);
+        return toResponse(pedidoSalvo);
+    }
 
-        return toResponse(pedidoRepository.save(pedido));
+    @Transactional
+    public void marcarEstoqueDebitado(Long pedidoId) {
+        Pedido pedido = obterEntidade(pedidoId);
+        if (pedido.getStatus() == StatusPedido.PROCESSANDO_ESTOQUE) {
+            pedido.setStatus(StatusPedido.CONCLUIDO);
+            pedidoRepository.save(pedido);
+        }
+    }
+
+    @Transactional
+    public void marcarFalhaEstoque(Long pedidoId) {
+        Pedido pedido = obterEntidade(pedidoId);
+        if (pedido.getStatus() == StatusPedido.PROCESSANDO_ESTOQUE) {
+            pedido.setStatus(StatusPedido.FALHA_ESTOQUE);
+            pedidoRepository.save(pedido);
+        }
     }
 
     private Pedido obterEntidade(Long id) {
@@ -97,8 +127,14 @@ public class PedidoService {
     }
 
     private void validarPedidoAberto(Pedido pedido) {
-        if (pedido.getStatus() == StatusPedido.CONCLUIDO) {
-            throw new BusinessException("Pedidos concluidos nao podem ser alterados");
+        if (pedido.getStatus() != StatusPedido.ABERTO) {
+            throw new BusinessException("Apenas pedidos abertos podem ser alterados");
+        }
+    }
+
+    private void validarPedidoPodeSerConcluido(Pedido pedido) {
+        if (pedido.getStatus() != StatusPedido.ABERTO && pedido.getStatus() != StatusPedido.FALHA_ESTOQUE) {
+            throw new BusinessException("Pedido nao pode ser concluido no status atual");
         }
     }
 
